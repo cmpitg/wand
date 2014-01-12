@@ -216,5 +216,45 @@ E.g.
                  preprocessed-sexp)))
     (wand-helper:eval-string sexp)))
 
+(defun* wand:execute (&optional (string-to-execute ""))
+  "Execute a string based on predefined rules stored in
+`wand:*rules*.  If no rules are found, `eval' the string using
+`wand:eval-string' function.
+
+This function could be called interactively.  The string to
+execute is determined as follow:
+
+* If this function is called non-interactively, it's the argument
+  that is passed to this function,
+
+* If there is currently a selection, it's the current selected
+  text,
+
+* Otherwise, prompt and get the result as its value.
+
+The rules are defined in `wand:*rules*' variable.  Use
+`wand:add-rule' to add rule and `wand:remove-rule' to remove
+rule.
+
+For strings that are not matched by any rules, they're called
+with `wand:eval-string' by default.
+
+E.g.
+
+\(some-func \"message \\\"Hello World\\\"\"\)
+\(some-func \"\(message \\\"Hello World\\\"\\)\"\)
+;; Both echo \"Hello World\" in echo area
+"
+  (interactive)
+  (let* ((string (cond ((not (wand-helper:string-empty? string-to-execute))
+                        string-to-execute)
+                       ((wand-helper:is-selecting?)
+                        (wand-helper:get-selection))
+                       (t
+                        (read-string "String: "))))
+         (action (or (wand:get-rule-action string)
+                     #'wand:eval-string)))
+    (funcall action string)))
+
 (provide 'wand)
 ;;; wand.el ends here
