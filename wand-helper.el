@@ -27,5 +27,8 @@
   "Determine if a string is empty."
   (= 0 (length str)))
 
+(defalias 'wand-helper:is-selecting? 'region-active-p
+  "Determine if there is currently a selection.")
+
 (provide 'wand-helper)
 ;;; wand-helper.el ends here
