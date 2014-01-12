@@ -1,6 +1,6 @@
 ;;; wand-helper.el --- Helpers for Wand
 
-;; Copyright (C) 2012-2013  Duong H. Nguyen
+;; Copyright (C) 2014  Duong H. Nguyen
 
 ;; Author: Duong H. Nguyen <cmpitgATgmail>
 ;; Keywords: extensions, tools
