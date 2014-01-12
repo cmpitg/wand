@@ -30,6 +30,14 @@
 (defalias 'wand-helper:is-selecting? 'region-active-p
   "Determine if there is currently a selection.")
 
+(defun wand-helper:get-selection ()
+  "If there is currently a selection, return it.  Otherwise
+return an empty string."
+  (if (wand-helper:is-selecting?)
+    (buffer-substring (region-beginning)
+                      (region-end))
+    ""))
+
 (defun wand-helper:eval-string (string)
   "Eval a string non-interactively."
   (eval (read string)))
