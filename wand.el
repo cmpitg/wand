@@ -27,6 +27,10 @@
 ;;
 ;; TODO: Screencast
 
+;;; Requirements
+
+;; Common Lisp Extensions, bundled with all recent versions of Emacs.
+
 ;;; Code:
 
 (provide 'wand)
