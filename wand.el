@@ -31,6 +31,122 @@
 
 ;; Common Lisp Extensions, bundled with all recent versions of Emacs.
 
+;;; Installation:
+
+;; The easiest way to get `wand' is to install it via ELPA or `el-get'.  If
+;; you prefer `el-get' to ELPA, simply do
+;;
+;;   (el-get-install 'wand)
+;;
+;; TODO: Alternatively, make sure you have MELPA repository added to
+;; `package-archives' and simply call `package-install':
+;;
+;;   (add-to-list 'package-archives '("melpa" . "http://melpa.milkbox.net/packages/"))
+;;   (package-initialize)
+;;   (package-install 'wand)
+;;
+;; Then `require' it:
+;;
+;;   (require 'wand)
+
+;;; Usage:
+
+;; To add a rule:
+;;
+;;   (wand:add-rule :match match-regexp
+;;                  :capture capture-rule
+;;                  :action action)
+;;
+;; Or set the value of `wand:*rules*' directly with `wand:create-rule'.  A
+;; piece of code example's worth thousands dry words:
+;;
+;;   (setq wand:*rules*
+;;         (list (wand:create-rule :match "\\$ "
+;;                                 :capture :after
+;;                                 :action popup-shell-command)
+;;               (wand:create-rule :match "https?://"
+;;                                 :capture :whole
+;;                                 :action open-url-in-firefox)
+;;               (wand:create-rule :match "file:"
+;;                                 :capture :after
+;;                                 :action find-file)
+;;               (wand:create-rule :match "#> "
+;;                                 :capture :after
+;;                                 :action (lambda (string)
+;;                                           (eval (read string))))))
+;;
+;; Means: if you call `wand:execute'
+;;
+;; * With `;; $ ls` in Lisp mode, a window[3] is popup with output of `ls` as
+;;   its content,
+;;
+;; * With `### $ ls` in Python mode, the result is similar as in Lisp mode,
+;;
+;; * With `http://google.com` or `https://google.com`, your Firefox will open
+;;   Google home page (with HTTP and HTTPS respectively),
+;;
+;; * With `file:~/tmp/tmp.el`, your `$HOME/tmp/tmp.el` is open in Emacs,
+;;
+;; * With `#> (message-box "¡Hola a todos!")`, a message box is displayed with
+;;   the text "¡Hola a todos!".
+;;
+;; * With any other string, the string is `eval'-ed with `wand:eval-string'.
+;;   This the default action for all unmatched strings.
+;;
+;; Of course `popup-shell-command' and `open-url-in-firefox' have to be
+;; defined.
+;;
+;; It's recommended to bind `wand:execute' to a key stroke and/or mouse for
+;; better usage pattern.  Here is a full example, take from my configuration:
+;;
+;;   (require 'wand)
+;;   (global-set-key (kbd "<C-return>")       'wand:execute)
+;;   (global-set-key (kbd "<C-S-return>")     'wand:execute-current-line)
+;;   (global-set-key (kbd "<C-mouse-1>")      'wand:execute)
+;;   (global-set-key (kbd "<C-down-mouse-1>")  nil)
+;;
+;;   (dolist (rule (list (wand:create-rule :match "\\$ "
+;;                                         :capture :after
+;;                                         :action $popup-shell-command)
+;;                       (wand:create-rule :match "https?://"
+;;                                         :capture :whole
+;;                                         :action $open-url-in-firefox)
+;;                       (wand:create-rule :match "file:"
+;;                                         :capture :after
+;;                                         :action toolbox:open-file)
+;;                       (wand:create-rule :match "#> "
+;;                                         :capture :after
+;;                                         :action $add-bracket-and-eval)
+;;                       (wand:create-rule :match "window:"
+;;                                         :capture :after
+;;                                         :action $switch-to-window)
+;;                       (wand:create-rule :match "eshell-cd:"
+;;                                         :capture :after
+;;                                         :action $change-dir-in-eshell)
+;;                       ))
+;;     (wand:add-rule rule))
+;;
+;; Note that `wand:execute' is an interactive command.  Thus you can call it
+;; just like other commands.
+;;
+;; Rule match order: last rule is checked first.  It means if you have 2 rules
+;; that share the same match regexp, the latter is chosen.
+;;
+
+;;; How it works:
+
+;; `wand:*rules*' is an alist of rules with format `(check-fn . action-fn)`.
+;; The input string passed to `wand:execute' is passed to all the `check-fn`s
+;; in the order they are added.  If `check-fn` returns `t', `action-fn` is
+;; called with the same input string as its only argument.  For detailed
+;; documentation, see docstrings of `wand:*rules*' and `wand:execute'.
+
+;;; Notes and references:
+
+;; [1] http://xiki.org/
+;; [2] http://acme.cat-v.org/
+;; [3] This is a window in Emacs terms, not a window in your GUI system.
+
 ;;; Code:
 
 (require 'cl)
@@ -47,6 +163,16 @@ Each element is a pair: `\(check-fn . action-fn\)` where:
 * `action-fn` is a one-argument function, taking a string and
   execute the action based on that string if its corresponding
   `check-fn` is satisfied.")
+
+(defun wand:get-rule-action (string)
+  "Determine if a string matches a predefined rule.  If it does,
+return the function corresponding to that rule's action;
+otherwise return `nil'."
+  (->> wand:*rules*
+    (-first (lambda (rule-pair)
+              (let ((rule-check-fn (car rule-pair)))
+                (funcall rule-check-fn string))))
+    cdr))
 
 (provide 'wand)
 ;;; wand.el ends here
