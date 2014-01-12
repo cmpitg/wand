@@ -174,5 +174,47 @@ otherwise return `nil'."
                 (funcall rule-check-fn string))))
     cdr))
 
+(defun wand:get-from-match-to-end (string regexp)
+  "Extract the substring from the end of the current match \(by
+`regexp`\) til the end of the string.
+
+E.g.
+
+\(wand:get-from-match-to-end \";; $ ls -lahF\" \"^[; ]*\\\\$ \"\)
+;; => \"ln -lahF\"
+"
+  (string-match regexp string)
+  (substring string (or (match-end 0) 0)))
+
+(defun wand:eval-string (&optional string)
+  "Add outer-most surrounding bracket if necessary and eval the
+string.  This function may be called interactively.  If it's in
+interactive mode and there's current a selection, the selection
+is evaluated.
+
+This function is convenient when being called interactively or
+quickly eval a selection which contains Emacs Lisp code.
+
+E.g.
+
+\(wand:eval-string \"message \\\"¡Hola mundo!\\\"\"\)
+;; => ¡Hola mundo!
+
+\(wand:eval-string \"\(message \\\"¡Hola mundo!\\\"\)\"\)
+;; => ¡Hola mundo!
+"
+  (interactive)
+  (let* ((preprocessed-sexp (cond ((not (wand-helper:string-empty? string))
+                                   string)
+                                  ((wand-helper:is-selecting?)
+                                   (wand-helper:get-selection))
+                                  (t
+                                   (read-string "Command: "))))
+         (sexp (if (not (and (s-starts-with? "(" preprocessed-sexp)
+                             (s-ends-with?   ")" preprocessed-sexp)))
+                 (format "(%s)" preprocessed-sexp)
+                 preprocessed-sexp)))
+    (wand-helper:eval-string sexp)))
+
 (provide 'wand)
 ;;; wand.el ends here
