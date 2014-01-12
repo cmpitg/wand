@@ -30,5 +30,9 @@
 (defalias 'wand-helper:is-selecting? 'region-active-p
   "Determine if there is currently a selection.")
 
+(defun wand-helper:eval-string (string)
+  "Eval a string non-interactively."
+  (eval (read string)))
+
 (provide 'wand-helper)
 ;;; wand-helper.el ends here
