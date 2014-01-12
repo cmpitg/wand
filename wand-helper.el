@@ -23,5 +23,9 @@
 
 ;;; Code:
 
+(defun wand-helper:string-empty? (str)
+  "Determine if a string is empty."
+  (= 0 (length str)))
+
 (provide 'wand-helper)
 ;;; wand-helper.el ends here
