@@ -216,6 +216,107 @@ E.g.
                  preprocessed-sexp)))
     (wand-helper:eval-string sexp)))
 
+(defmacro* wand:create-rule (&key (skip-comment t)
+                                  match
+                                  capture
+                                  (action wand:eval-string))
+  "This macro provides a simplified, declarative, yet very
+effective way to create a pattern-action rule without having to
+construct the `\(check-fn . action-fn\)` cons manually.
+
+`wand:create-rule' takes several arguments describing the process
+of matching and extracting a string and the action performed upon
+it:
+
+* `match` is a regexp to test whether the input string (passed to
+  `check-fn`) satisfies current rule.  The input string is
+  checked with `string-match-p'.
+
+* `capture` determines how the input string is extracted to be
+  passed to `action-fn`.  It takes one of the following types of
+  value:
+
+  - `:whole' - means the original string is passed to `action`.
+
+  - `:after' - means only substring after the match part is
+    passed to `action`.
+
+  - `nil' - means an empty string is passed to `action`.
+
+  - a regular expression _with capture group_.  `string-match'
+    followed by `match-string' are called to extract the first
+    captured group which is then is passed to `action`.
+
+  - a function - that takes the original string and returns what
+    `action` wants to process
+
+* `skip-comment` takes either `t' or `nil', determining if line
+  comment syntax of current mode is skipped when matching
+  happens.  By default, `skip-comment` is `t', which means
+  comments are skipped.
+
+* `action` is `action-fn`, a function that will be called when
+  the input string is matched.  `action` is `wand:eval-string' by
+  default.
+
+E.g.
+
+Call `\(message-box something\)` when input string is `#> something`:
+
+  \(wand:create-rule :match \"#> \"
+            :capture :after
+            :action message-box\)
+
+Browse a HTTP/HTTPS web page when input string is
+`http://some-url` or `https://some-url`:
+
+  \(wand:create-rule :match \"https?://\"
+            :capture :whole
+            :action browse-url\)
+
+Open file when input string is `file:///path/to/your-file`:
+
+  \(wand:create-rule :match \"file:///\"
+            :capture :after
+            :action find-file\)
+"
+  (let* ((match-regexp `(format "^[%s ]*%s"
+                                comment-start
+                                ,match))
+
+         (extract-regexp (cond
+                          ;; Capture the string after position the regexp
+                          ;; matches
+                          ((equalp :after capture)
+                           `(format "^[%s ]*%s\\(.*\\)$"
+                                    comment-start
+                                    ,match))
+
+                          ;; Capture the whole string right after comment
+                          ((equalp :whole capture)
+                           `(format "^[%s ]*\\(%s.*\\)$"
+                                    comment-start
+                                    ,match))
+
+                          ;; No capturing
+                          ((or (null capture)
+                               (not (equalp 'string (type-of capture))))
+                           "")
+
+                          ;; Regexp is specified manually
+                          (t
+                           capture)))
+
+         (rule-check-fn `(lambda (string)
+                           (string-match-p ,match-regexp string)))
+
+         (action-fn `(lambda (string)
+                       (let* ((extract (progn
+                                         (string-match ,extract-regexp string)
+                                         (match-string 1 string))))
+                         (,action extract)))))
+    `(cons ,rule-check-fn ,action-fn)))
+
 (defun* wand:execute (&optional (string-to-execute ""))
   "Execute a string based on predefined rules stored in
 `wand:*rules*.  If no rules are found, `eval' the string using
