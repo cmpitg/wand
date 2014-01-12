@@ -256,5 +256,10 @@ E.g.
                      #'wand:eval-string)))
     (funcall action string)))
 
+(defun wand:execute-current-line ()
+  "Call `wand:execute' on current line."
+  (interactive)
+  (wand:execute (thing-at-point 'line)))
+
 (provide 'wand)
 ;;; wand.el ends here
