@@ -33,5 +33,20 @@
 
 ;;; Code:
 
+(require 'cl)
+
+(defvar wand:*rules*
+  '()
+  "The list of rules to for pattern-based action.  Rules are
+added using `wand:add-rule' and remove using `wand:remove-rule'.
+Each element is a pair: `\(check-fn . action-fn\)` where:
+
+* `check-fn` is a one-argument function, taking a string and
+  determining if the string satisfies the rule.
+
+* `action-fn` is a one-argument function, taking a string and
+  execute the action based on that string if its corresponding
+  `check-fn` is satisfied.")
+
 (provide 'wand)
 ;;; wand.el ends here
