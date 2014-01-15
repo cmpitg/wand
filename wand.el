@@ -154,8 +154,9 @@
 (defvar wand:*rules*
   '()
   "The list of rules to for pattern-based action.  Rules are
-added using `wand:add-rule' and remove using `wand:remove-rule'.
-Each element is a pair: `\(check-fn . action-fn\)` where:
+added using `wand:add-rule' and remove using
+`wand:remove-rule'/`wand:remove-rule-pattern'.  Each element is a
+pair: `\(check-fn . action-fn\)` where:
 
 * `check-fn` is a one-argument function, taking a string and
   determining if the string satisfies the rule.
@@ -352,8 +353,8 @@ execute is determined as follow:
 * Otherwise, prompt and get the result as its value.
 
 The rules are defined in `wand:*rules*' variable.  Use
-`wand:add-rule' to add rule and `wand:remove-rule' to remove
-rule.
+`wand:add-rule' to add rule, `wand:remove-rule' or
+`wand:remove-rule-pattern' to remove rule.
 
 For strings that are not matched by any rules, they're called
 with `wand:eval-string' by default.
