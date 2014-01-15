@@ -317,6 +317,17 @@ Open file when input string is `file:///path/to/your-file`:
                          (,action extract)))))
     `(cons ,rule-check-fn ,action-fn)))
 
+(defun wand:add-rule (rule)
+  "Add a rule created by `wand:create-rule' to `wand:*rules*'.
+
+Usage: `\(wand:add-rule \(wand:create-rule ...\)\)`.
+
+Note: If 2 rules share the same pattern, the one which is added
+latter takes higher precedence."
+  (if (assq check-fn wand:*rules*)
+    (wand:remove-rule check-fn))
+  (setq wand:*rules* (cons rule wand:*rules*)))
+
 (defun* wand:execute (&optional (string-to-execute ""))
   "Execute a string based on predefined rules stored in
 `wand:*rules*.  If no rules are found, `eval' the string using
