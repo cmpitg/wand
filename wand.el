@@ -328,6 +328,14 @@ latter takes higher precedence."
     (wand:remove-rule check-fn))
   (setq wand:*rules* (cons rule wand:*rules*)))
 
+(defun wand:remove-rule (check-fn)
+  "Remove a rule from `wand:*rules*' based on its `check-fn` and
+return `wand:*rules*'."
+  (setq wand:*rules* (-filter (lambda (rule)
+                                (let ((fn (car rule)))
+                                  (not (equal fn check-fn))))
+                              wand:*rules*)))
+
 (defun* wand:execute (&optional (string-to-execute ""))
   "Execute a string based on predefined rules stored in
 `wand:*rules*.  If no rules are found, `eval' the string using
