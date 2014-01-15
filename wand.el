@@ -157,6 +157,7 @@
 ;;; Code:
 
 (require 'cl)
+(require 'dash)
 
 (defvar wand:*rules*
   '()
