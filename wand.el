@@ -309,6 +309,7 @@ Open file when input string is `file:///path/to/your-file`:
                            capture)))
 
          (rule-check-fn `(lambda (string)
+                           ,match       ; Using `match` as its docstring
                            (string-match-p ,match-regexp string)))
 
          (action-fn `(lambda (string)
@@ -334,6 +335,14 @@ return `wand:*rules*'."
   (setq wand:*rules* (-filter (lambda (rule)
                                 (let ((fn (car rule)))
                                   (not (equal fn check-fn))))
+                              wand:*rules*)))
+
+(defun wand:remove-rule-pattern (pattern)
+  "Remove a rule from `wand:*rules*' based on its matching
+pattern and return `wand:*rules*'."
+  (setq wand:*rules* (-filter (lambda (rule)
+                                (let ((fn (car rule)))
+                                  (not (equal pattern (documentation fn)))))
                               wand:*rules*)))
 
 (defun* wand:execute (&optional (string-to-execute ""))
