@@ -27,9 +27,15 @@
 ;;
 ;; TODO: Screencast
 
-;;; Requirements
+;;; Dependencies:
 
-;; Common Lisp Extensions, bundled with all recent versions of Emacs.
+;; Note that you don't need to worry about these dependencies if you're using
+;; an Emacs package manager such as ELPA or el-get.
+;;
+;; * Common Lisp Extensions, bundled with all recent versions of Emacs.
+;;
+;; * A modern list library for Emacs Lisp: magnars's excellent Dash[4] -- to
+;;   promote better ways to write Emacs Lisp.
 
 ;;; Installation:
 
@@ -146,6 +152,7 @@
 ;; [1] http://xiki.org/
 ;; [2] http://acme.cat-v.org/
 ;; [3] This is a window in Emacs terms, not a window in your GUI system.
+;; [4] https://github.com/magnars/dash.el
 
 ;;; Code:
 
