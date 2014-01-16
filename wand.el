@@ -159,6 +159,8 @@
 (require 'cl)
 (require 'dash)
 
+(require 'wand-helper)
+
 (defvar wand:*rules*
   '()
   "The list of rules to for pattern-based action.  Rules are
