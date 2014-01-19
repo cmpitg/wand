@@ -18,7 +18,7 @@ TODO:
 
 ## Installation ##
 
-Make sure you have Dash installed.  If not, please refer to Dash's
+Make sure you have Dash installed.  If not, please follow to Dash's
 [installation instruction](https://github.com/magnars/dash.el#installation) to
 install Dash.
 
