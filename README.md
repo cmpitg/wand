@@ -42,6 +42,68 @@ instructions below:
   (require 'wand)
   ```
 
+## Usage ##
+
+### Example ###
+
+It's probably the best to have a look at an example.
+
+`wand:execute` is a command (an `interactive` function) that takes the current
+selection (if selection is active) or a string and performs an action based on
+current rules residing in `wand:*rules*`.  I use this command so frequently
+that I bind it to `<C-return>` and `<C-mouse-1>`.
+
+```lisp
+(require 'wand)
+(global-set-key (kbd "<C-return>")       'wand:execute)
+(global-set-key (kbd "<C-mouse-1>")      'wand:execute)
+(global-set-key (kbd "<C-down-mouse-1>")  nil)
+```
+
+Then, I want whenever `wand:execute` is called upon a selection of a string
+that:
+
+* starts with `$ command`, `command` is executed as a shell command, and
+  its output is taken back to Emacs as a popup buffer (using
+  [Popwin](https://github.com/m2ym/popwin-el) library),
+
+  ```lisp
+  (wand:add-rule-by-pattern :match "\\$ "
+                            :capture :after
+                            :action popup-shell-command)
+  ```
+
+* starts with `http://an-url` or `https://a-url`, `a-url` is opened in
+  Firefox with HTTP or HTTPS as its protocol respectively:
+
+  ```lisp
+  (wand:add-rule-by-pattern :match "https?://"
+                            :capture :whole
+                            :action open-url-in-firefox)
+  ```
+
+* starts with `file:path-to-a-file`, that corresponding file is open with
+  Emacs.  This is particularly useful when using with
+  [`openwith`](http://www.emacswiki.org/emacs/OpenWith):
+
+  ```lisp
+  (wand:add-rule-by-pattern :match "file:"
+                            :capture :after
+                            :action find-file)
+  ```
+
+* starts with `#> an-emacs-lisp-expression`, brackets are added to that
+  expression if necessary and it's then evaluated:
+
+  ```lisp
+  (wand:add-rule-by-pattern :match "file:"
+                            :capture :after
+                            :action add-bracket-and-eval)
+  ```
+
+Comments are skipped when the pattern-matching process is performed.  The code
+is pretty self-explanatory.
+
 ## License ##
 
 This project along with its source code and all materials are released under
