@@ -6,9 +6,15 @@ editor.
 
 TODO:
 
-* Takes from source code
 * Screencast
 * Make `wand` available in MELPA
+
+## Requirements ##
+
+* Emacs 23+
+
+* Wand depends of `cl` library (bundled with Emacs 23+) and
+  [Dash](https://github.com/magnars/dash.el).
 
 ## Installation ##
 
