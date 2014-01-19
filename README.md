@@ -8,6 +8,8 @@ TODO:
 
 * Takes from source code
 * Screencast
+* Make `wand` available in MELPA
+
 
 ## License ##
 
