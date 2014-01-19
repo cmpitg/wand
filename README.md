@@ -18,9 +18,12 @@ TODO:
 
 ## Installation ##
 
-Currently, you could try out Wand by latest working version and `require` in
-your Emacs init file (typically residing at `~/.emacs`, `~/.emacs.el`, or
-`~/.emacs.d/init.el`):
+Make sure you have Dash installed.  If not, please refer to Dash's
+[installation instruction](https://github.com/magnars/dash.el#installation) to
+install Dash.
+
+Currently, you could try out Wand's latest working version with the
+instructions below:
 
 * Download and extract the
   [latest working version](http://reference-error.org/emacs/wand-latest.zip):
