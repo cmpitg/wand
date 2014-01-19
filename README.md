@@ -10,6 +10,28 @@ TODO:
 * Screencast
 * Make `wand` available in MELPA
 
+## Installation ##
+
+Currently, you could try out Wand by latest working version and `require` in
+your Emacs init file (typically residing at `~/.emacs`, `~/.emacs.el`, or
+`~/.emacs.d/init.el`):
+
+* Download and extract the
+  [latest working version](http://reference-error.org/emacs/wand-latest.zip):
+
+  ```sh
+  cd /some/dir/you/place/your/emacs/libs
+  wget http://reference-error.org/emacs/wand-latest.zip
+  unzip wand-latest.zip
+  ```
+
+* Add Wand directory to your `load-path` and `require`:
+
+  ```sh
+  # Edit your `~/.emacs`, `~/.emacs.el`, or `~/.emacs.d/init.el`
+  (add-to-list 'load-path "/path/to/your/wand/directory")
+  (require 'wand)
+  ```
 
 ## License ##
 
