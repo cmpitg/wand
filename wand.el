@@ -5,6 +5,7 @@
 ;; Author: Duong H. Nguyen <cmpitgATgmail>
 ;; Keywords: extensions, tools
 ;; URL: https://github.com/cmpitg/wand
+;; Package-Requires: ((dash "2.5.0"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
