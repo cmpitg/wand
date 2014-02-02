@@ -4,10 +4,7 @@ Wand is an extension that allows users to select a piece of text and perform
 actions based on predefined patterns.  Wand is inspired by Xiki and Acme
 editor.
 
-TODO:
-
 * Screencast
-* Make `wand` available in MELPA
 
 ## Requirements ##
 
@@ -18,29 +15,8 @@ TODO:
 
 ## Installation ##
 
-Make sure you have Dash installed.  If not, please follow to Dash's
-[installation instruction](https://github.com/magnars/dash.el#installation) to
-install Dash.
-
-Currently, you could try out Wand's latest working version with the
-instructions below:
-
-* Download and extract the
-  [latest working version](http://reference-error.org/emacs/wand-latest.zip):
-
-  ```sh
-  cd /some/dir/you/place/your/emacs/libs
-  wget http://reference-error.org/emacs/wand-latest.zip
-  unzip wand-latest.zip
-  ```
-
-* Add Wand directory to your `load-path` and `require`:
-
-  ```sh
-  # Edit your `~/.emacs`, `~/.emacs.el`, or `~/.emacs.d/init.el`
-  (add-to-list 'load-path "/path/to/your/wand/directory")
-  (require 'wand)
-  ```
+Thanks to [@yasuyk](https://github.com/yasuyk) Wand is available in Melpa.
+Installation process is now as simple as `M-x package-install RET wand RET`.
 
 ## Usage ##
 
@@ -103,6 +79,12 @@ that:
 
 Comments are skipped when the pattern-matching process is performed.  The code
 is pretty self-explanatory.
+
+## Thanks ##
+
+Special thanks to:
+
+* [@yasuyk](https://github.com/yasuyk) for making Wand available in Melpa.
 
 ## License ##
 
