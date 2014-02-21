@@ -72,7 +72,7 @@ that:
   expression if necessary and it's then evaluated:
 
   ```lisp
-  (wand:add-rule-by-pattern :match "file:"
+  (wand:add-rule-by-pattern :match "#> "
                             :capture :after
                             :action add-bracket-and-eval)
   ```
@@ -85,6 +85,8 @@ is pretty self-explanatory.
 Special thanks to:
 
 * [@yasuyk](https://github.com/yasuyk) for making Wand available in Melpa.
+* [@MatthewDarling](https://github.com/MatthewDarling) for correcting code
+  example in README.
 
 ## License ##
 
