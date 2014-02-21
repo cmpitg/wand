@@ -85,6 +85,7 @@ is pretty self-explanatory.
 Special thanks to:
 
 * [@yasuyk](https://github.com/yasuyk) for making Wand available in Melpa.
+
 * [@MatthewDarling](https://github.com/MatthewDarling) for correcting code
   example in README.
 
