@@ -333,7 +333,7 @@ Usage: `\(wand:add-rule \(wand:create-rule ...\)\)`.
 
 Note: If 2 rules share the same pattern, the one which is added
 latter takes higher precedence."
-  (wand:remove-rule check-fn)
+  (wand:remove-rule (car rule))
   (setq wand:*rules* (cons rule wand:*rules*)))
 
 (defun wand:remove-rule (check-fn)
