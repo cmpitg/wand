@@ -398,5 +398,26 @@ E.g.
   (interactive)
   (wand:execute (thing-at-point 'line)))
 
+(defmacro* wand:add-rule-by-pattern (&key (skip-comment t)
+                                          match
+                                          capture
+                                          (action wand:eval-string))
+  "This function is a shorthand for
+
+\(add-to-list 'wand:*rules*
+             \(wand:create-rule :skip-comment skip-comment
+                               :match match
+                               :capture capture
+                               :action action\)\)
+
+Besides, if there are 2 rules that share the same `match', the
+one which's added later takes effect."
+  `(setq wand:*rules* (wand:remove-rule-by-pattern ,match))
+  `(wand:add-rule (wand:create-rule :skip-comment ,skip-comment
+                                    :match ,match
+                                    :capture ,capture
+                                    :action ,action)))
+
+
 (provide 'wand)
 ;;; wand.el ends here
