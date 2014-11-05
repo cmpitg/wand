@@ -89,6 +89,8 @@ Special thanks to:
 * [@MatthewDarling](https://github.com/MatthewDarling) for correcting code
   example in README.
 
+* [@syl20bnr](https://github.com/syl20bnr) for the issue report.
+
 ## License ##
 
 This project along with its source code and all materials are released under
