@@ -34,8 +34,11 @@
 ;;
 ;; * Common Lisp Extensions, bundled with all recent versions of Emacs.
 ;;
-;; * A modern list library for Emacs Lisp: magnars's excellent Dash[4] -- to
+;; * A modern list library for Emacs Lisp: @magnars's excellent Dash[4] -- to
 ;;   promote better ways to write Emacs Lisp.
+;;
+;; * The long lost Emacs string manipulation library: s.el[5] -- also by
+;;   @magnars.
 
 ;;; Installation:
 
@@ -150,11 +153,13 @@
 ;; [2] http://acme.cat-v.org/
 ;; [3] This is a window in Emacs terms, not a window in your GUI system.
 ;; [4] https://github.com/magnars/dash.el
+;; [5] https://github.com/magnars/s.el
 
 ;;; Code:
 
 (require 'cl)
 (require 'dash)
+(require 's)
 
 (require 'wand-helper)
 
