@@ -217,17 +217,15 @@ E.g.
 ;; => ¡Hola mundo!
 "
   (interactive)
-  (let* ((preprocessed-sexp (cond ((not (wand-helper:string-empty? string))
-                                   string)
-                                  ((wand-helper:is-selecting?)
-                                   (wand-helper:get-selection))
-                                  (t
-                                   (read-string "Command: "))))
+  (let* ((preprocessed-sexp (if (wand-helper:is-selecting?)
+                                (wand-helper:get-selection)
+                              string))
          (sexp (if (not (and (s-starts-with? "(" preprocessed-sexp)
                              (s-ends-with?   ")" preprocessed-sexp)))
-                 (format "(%s)" preprocessed-sexp)
+                   (format "(%s)" preprocessed-sexp)
                  preprocessed-sexp)))
-    (wand-helper:eval-string sexp)))
+    (unless (string-empty? (s-trim string))
+      (wand-helper:eval-string sexp))))
 
 (defmacro* wand:create-rule (&key (skip-comment t)
                                   match
@@ -371,7 +369,7 @@ execute is determined as follow:
 * If there is currently a selection, it's the current selected
   text,
 
-* Otherwise, prompt and get the result as its value.
+* Otherwise, do nothing.
 
 The rules are defined in `wand:*rules*' variable.  Use
 `wand:add-rule' or `wand:add-rule-by-pattern' to add rule,
@@ -388,15 +386,13 @@ E.g.
 ;; Both echo \"Hello World\" in echo area
 "
   (interactive)
-  (let* ((string (cond ((not (wand-helper:string-empty? string-to-execute))
-                        string-to-execute)
-                       ((wand-helper:is-selecting?)
-                        (wand-helper:get-selection))
-                       (t
-                        (read-string "String: "))))
+  (let* ((string (if (wand-helper:is-selecting?)
+                     (wand-helper:get-selection)
+                   string-to-execute))
          (action (or (wand:get-rule-action string)
                      #'wand:eval-string)))
-    (funcall action string)))
+    (unless (string-empty? (s-trim string))
+      (funcall action string))))
 
 (defun wand:execute-current-line ()
   "Call `wand:execute' on current line."
