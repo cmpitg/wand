@@ -305,9 +305,8 @@ Open file when input string is `file:///path/to/your-file`:
 
                           ;; Capture the whole string right after comment
                           ((equalp :whole capture)
-                           `(format "^[%s ]*\\(%s.*\\)$"
-                                    comment-start
-                                    ,match))
+                           `(format "^[%s ]*\\(.*\\)$"
+                                    comment-start))
 
                           ;; No capturing
                           ((or (null capture)
