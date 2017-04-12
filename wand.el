@@ -1,6 +1,6 @@
 ;;; wand.el --- Magic wand for Emacs - Select and execute
 
-;; Copyright (C) 2014-2017  Ha-Duong Nguyen
+;; Copyright (C) 2014-2017 Ha-Duong Nguyen (@cmpitg)
 
 ;; Author: Ha-Duong Nguyen <cmpitgATgmail>
 ;; Keywords: extensions, tools
