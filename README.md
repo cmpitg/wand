@@ -93,6 +93,10 @@ Special thanks to:
 
 * [@syl20bnr](https://github.com/syl20bnr) for the issue report.
 
+* [@rubikitch](https://github.com/rubikitch)
+  for
+  [fixing the `string-empty?` typo](https://github.com/cmpitg/wand/pull/9).
+
 ## License ##
 
 This project along with its source code and all materials are released under
