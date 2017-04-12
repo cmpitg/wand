@@ -390,7 +390,7 @@ E.g.
                    string-to-execute))
          (action (or (wand:get-rule-action string)
                      #'wand:eval-string)))
-    (unless (string-empty? (s-trim string))
+    (unless (wand-helper:string-empty? (s-trim string))
       (funcall action string))))
 
 (defun wand:execute-current-line ()
