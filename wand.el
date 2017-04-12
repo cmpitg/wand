@@ -224,7 +224,7 @@ E.g.
                              (s-ends-with?   ")" preprocessed-sexp)))
                    (format "(%s)" preprocessed-sexp)
                  preprocessed-sexp)))
-    (unless (string-empty? (s-trim string))
+    (unless (wand-helper:string-empty? (s-trim string))
       (wand-helper:eval-string sexp))))
 
 (defmacro* wand:create-rule (&key (skip-comment t)
