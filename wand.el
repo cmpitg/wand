@@ -291,22 +291,28 @@ Open file when input string is `file:///path/to/your-file`:
             :capture :after
             :action find-file\)
 "
-  (let* ((match-regexp `(format "^[%s ]*%s"
-                                comment-start
-                                ,match))
+  (let* ((match-regexp (if skip-comment
+                           `(format "^[%s ]*%s"
+                                    comment-start
+                                    ,match)
+                         match))
 
          (extract-regexp (cond
                           ;; Capture the string after position the regexp
                           ;; matches
                           ((equalp :after capture)
-                           `(format "^[%s ]*%s\\(.*\\)$"
-                                    comment-start
-                                    ,match))
+                           (if skip-comment
+                               `(format "^[%s ]*%s\\(.*\\)$"
+                                        comment-start
+                                        ,match)
+                             `(format "%s\\(.*\\)$" ,match)))
 
                           ;; Capture the whole string right after comment
                           ((equalp :whole capture)
-                           `(format "^[%s ]*\\(.*\\)$"
-                                    comment-start))
+                           (if skip-comment
+                               `(format "^[%s ]*\\(.*\\)$"
+                                        comment-start)
+                             `(rx (group (0+ (or any "\n"))))))
 
                           ;; No capturing
                           ((or (null capture)
