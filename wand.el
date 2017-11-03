@@ -1,8 +1,8 @@
 ;;; wand.el --- Magic wand for Emacs - Selecting and executing
 
-;; Copyright (C) 2014  Duong H. Nguyen
+;; Copyright (C) 2014-2017 Ha-Duong Nguyen
 
-;; Author: Duong H. Nguyen <cmpitgATgmail>
+;; Author: Ha-Duong Nguyen <cmpitgATgmail>
 ;; Keywords: extensions, tools
 ;; URL: https://github.com/cmpitg/wand
 ;; Package-Requires: ((dash "2.5.0"))
