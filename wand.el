@@ -1,30 +1,30 @@
-;;; wand.el --- Magic wand for Emacs - Selecting and executing
+;;; wand.el --- Magic wand for Emacs - Select and execute
 
-;; Copyright (C) 2014-2017 Ha-Duong Nguyen
+;; Copyright (C) 2014-2017 Ha-Duong Nguyen (@cmpitg)
 
 ;; Author: Ha-Duong Nguyen <cmpitgATgmail>
 ;; Keywords: extensions, tools
 ;; URL: https://github.com/cmpitg/wand
-;; Package-Requires: ((dash "2.5.0"))
+;; Package-Requires: ((dash "20161121.55") (s "20160928.636"))
 
-;; This program is free software; you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
+;; This program is free software; you can redistribute it and/or modify it
+;; under the terms of the GNU General Public License as published by the Free
+;; Software Foundation, either version 3 of the License, or (at your option)
+;; any later version.
 
-;; This program is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
+;; This program is distributed in the hope that it will be useful, but WITHOUT
+;; ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+;; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+;; more details.
 
-;; You should have received a copy of the GNU General Public License
-;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
+;; You should have received a copy of the GNU General Public License along
+;; with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
-;; Wand is an extension that allows users to select a piece of text and
-;; perform actions based on predefined patterns.  Wand is inspired by Xiki[1]
-;; and Acme editor[2].
+;; Wand is an extension that allows users to select text and perform actions
+;; based on predefined patterns.  Wand is inspired by Xiki[1] and Acme
+;; editor[2].
 ;;
 
 ;;; Dependencies:
@@ -34,8 +34,11 @@
 ;;
 ;; * Common Lisp Extensions, bundled with all recent versions of Emacs.
 ;;
-;; * A modern list library for Emacs Lisp: magnars's excellent Dash[4] -- to
+;; * A modern list library for Emacs Lisp: @magnars's excellent Dash[4] -- to
 ;;   promote better ways to write Emacs Lisp.
+;;
+;; * The long lost Emacs string manipulation library: s.el[5] -- also by
+;;   @magnars.
 
 ;;; Installation:
 
@@ -150,11 +153,13 @@
 ;; [2] http://acme.cat-v.org/
 ;; [3] This is a window in Emacs terms, not a window in your GUI system.
 ;; [4] https://github.com/magnars/dash.el
+;; [5] https://github.com/magnars/s.el
 
 ;;; Code:
 
 (require 'cl)
 (require 'dash)
+(require 's)
 
 (require 'wand-helper)
 
@@ -212,17 +217,15 @@ E.g.
 ;; => ¡Hola mundo!
 "
   (interactive)
-  (let* ((preprocessed-sexp (cond ((not (wand-helper:string-empty? string))
-                                   string)
-                                  ((wand-helper:is-selecting?)
-                                   (wand-helper:get-selection))
-                                  (t
-                                   (read-string "Command: "))))
+  (let* ((preprocessed-sexp (if (wand-helper:is-selecting?)
+                                (wand-helper:get-selection)
+                              string))
          (sexp (if (not (and (s-starts-with? "(" preprocessed-sexp)
                              (s-ends-with?   ")" preprocessed-sexp)))
-                 (format "(%s)" preprocessed-sexp)
+                   (format "(%s)" preprocessed-sexp)
                  preprocessed-sexp)))
-    (wand-helper:eval-string sexp)))
+    (unless (wand-helper:string-empty? (s-trim string))
+      (wand-helper:eval-string sexp))))
 
 (defmacro* wand:create-rule (&key (skip-comment t)
                                   match
@@ -288,23 +291,28 @@ Open file when input string is `file:///path/to/your-file`:
             :capture :after
             :action find-file\)
 "
-  (let* ((match-regexp `(format "^[%s ]*%s"
-                                comment-start
-                                ,match))
+  (let* ((match-regexp (if skip-comment
+                           `(format "^[%s ]*%s"
+                                    comment-start
+                                    ,match)
+                         match))
 
          (extract-regexp (cond
                           ;; Capture the string after position the regexp
                           ;; matches
                           ((equalp :after capture)
-                           `(format "^[%s ]*%s\\(.*\\)$"
-                                    comment-start
-                                    ,match))
+                           (if skip-comment
+                               `(format "^[%s ]*%s\\(.*\\)$"
+                                        comment-start
+                                        ,match)
+                             `(format "%s\\(.*\\)$" ,match)))
 
                           ;; Capture the whole string right after comment
                           ((equalp :whole capture)
-                           `(format "^[%s ]*\\(%s.*\\)$"
-                                    comment-start
-                                    ,match))
+                           (if skip-comment
+                               `(format "^[%s ]*\\(.*\\)$"
+                                        comment-start)
+                             `(rx (group (0+ (or any "\n"))))))
 
                           ;; No capturing
                           ((or (null capture)
@@ -366,7 +374,7 @@ execute is determined as follow:
 * If there is currently a selection, it's the current selected
   text,
 
-* Otherwise, prompt and get the result as its value.
+* Otherwise, do nothing.
 
 The rules are defined in `wand:*rules*' variable.  Use
 `wand:add-rule' or `wand:add-rule-by-pattern' to add rule,
@@ -383,15 +391,13 @@ E.g.
 ;; Both echo \"Hello World\" in echo area
 "
   (interactive)
-  (let* ((string (cond ((not (wand-helper:string-empty? string-to-execute))
-                        string-to-execute)
-                       ((wand-helper:is-selecting?)
-                        (wand-helper:get-selection))
-                       (t
-                        (read-string "String: "))))
+  (let* ((string (if (wand-helper:is-selecting?)
+                     (wand-helper:get-selection)
+                   string-to-execute))
          (action (or (wand:get-rule-action string)
                      #'wand:eval-string)))
-    (funcall action string)))
+    (unless (wand-helper:string-empty? (s-trim string))
+      (funcall action string))))
 
 (defun wand:execute-current-line ()
   "Call `wand:execute' on current line."
