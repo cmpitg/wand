@@ -1,6 +1,6 @@
 ;;; wand.el --- Magic wand for Emacs - Select and execute
 
-;; Copyright (C) 2014-2017 Ha-Duong Nguyen (@cmpitg)
+;; Copyright (C) 2014-2018 Ha-Duong Nguyen (@cmpitg)
 
 ;; Author: Ha-Duong Nguyen <cmpitgATgmail>
 ;; Keywords: extensions, tools
@@ -202,8 +202,7 @@ E.g.
 (defun wand:eval-string (&optional string)
   "Add outer-most surrounding bracket if necessary and eval the
 string.  This function may be called interactively.  If it's in
-interactive mode and there's current a selection, the selection
-is evaluated.
+string is `'nil', the current selection is evaluated.
 
 This function is convenient when being called interactively or
 quickly eval a selection which contains Emacs Lisp code.
@@ -362,7 +361,7 @@ pattern and return `wand:*rules*'."
 
 (defun* wand:execute (&optional (string-to-execute ""))
   "Execute a string based on predefined rules stored in
-`wand:*rules*.  If no rules are found, `eval' the string using
+`wand:*rules*.  If no rules are found, eval the string using
 `wand:eval-string' function.
 
 This function could be called interactively.  The string to

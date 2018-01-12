@@ -3,13 +3,11 @@
 Wand is an extension that allows users to select text and perform actions
 based on predefined patterns.  Wand is inspired by Xiki and Acme editor.
 
-* Screencast (Upcoming - **Jan 2017**)
+* Screencast (Upcoming)
 
 ## Requirements ##
 
 * Emacs 24+
-
-* Emacs Lisp CL library (bundled with Emacs 23+)
 
 * [Dash](https://github.com/magnars/dash.el) - for list processing
 
