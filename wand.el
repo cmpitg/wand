@@ -217,9 +217,10 @@ E.g.
 ;; => ¡Hola mundo!
 "
   (interactive)
-  (let* ((preprocessed-sexp (if (wand-helper:is-selecting?)
+  (let* ((preprocessed-sexp (if (or (null string-to-execute)
+                                    (string-empty-p string-to-execute))
                                 (wand-helper:get-selection)
-                              string))
+                              string-to-execute))
          (sexp (if (not (and (s-starts-with? "(" preprocessed-sexp)
                              (s-ends-with?   ")" preprocessed-sexp)))
                    (format "(%s)" preprocessed-sexp)
@@ -391,7 +392,8 @@ E.g.
 ;; Both echo \"Hello World\" in echo area
 "
   (interactive)
-  (let* ((string (if (wand-helper:is-selecting?)
+  (let* ((string (if (or (null string-to-execute)
+                         (string-empty-p string-to-execute))
                      (wand-helper:get-selection)
                    string-to-execute))
          (action (or (wand:get-rule-action string)
