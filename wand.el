@@ -160,6 +160,7 @@
 (require 'cl)
 (require 'dash)
 (require 's)
+(require 'subr-x)
 
 (require 'wand-helper)
 
@@ -181,7 +182,7 @@ element is a pair: `\(check-fn . action-fn\)` where:
   "Determine if a string matches a predefined rule.  If it does,
 return the function corresponding to that rule's action;
 otherwise return `nil'."
-  (->> wand:*rules*
+  (thread-last wand:*rules*
     (-first (lambda (rule-pair)
               (let ((rule-check-fn (car rule-pair)))
                 (funcall rule-check-fn string))))

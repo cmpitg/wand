@@ -7,7 +7,7 @@ based on predefined patterns.  Wand is inspired by Xiki and Acme editor.
 
 ## Requirements ##
 
-* Emacs 24+
+* Emacs 25+
 
 * [Dash](https://github.com/magnars/dash.el) - for list processing
 
