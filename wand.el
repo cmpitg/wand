@@ -217,10 +217,10 @@ E.g.
 ;; => ¡Hola mundo!
 "
   (interactive)
-  (let* ((preprocessed-sexp (if (or (null string-to-execute)
-                                    (string-empty-p string-to-execute))
+  (let* ((preprocessed-sexp (if (or (null string)
+                                    (string-empty-p string))
                                 (wand-helper:get-selection)
-                              string-to-execute))
+                              string))
          (sexp (if (not (and (s-starts-with? "(" preprocessed-sexp)
                              (s-ends-with?   ")" preprocessed-sexp)))
                    (format "(%s)" preprocessed-sexp)
