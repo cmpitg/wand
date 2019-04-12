@@ -1,6 +1,6 @@
 ;;; wand-helper.el --- Helpers for Wand
 
-;; Copyright (C) 2014-2017 Ha-Duong Nguyen (@cmpitg)
+;; Copyright (C) 2014-2018 Ha-Duong Nguyen (@cmpitg)
 
 ;; Author: Ha-Duong Nguyen <cmpitgATgmail>
 ;; Keywords: extensions, tools
@@ -23,24 +23,44 @@
 
 ;;; Code:
 
-(defun wand-helper:string-empty? (str)
-  "Determine if a string is empty."
-  (= 0 (length str)))
-
-(defalias 'wand-helper:is-selecting? 'region-active-p
-  "Determine if there is currently a selection.")
-
 (defun wand-helper:get-selection ()
-  "If there is currently a selection, return it.  Otherwise
-return an empty string."
-  (if (wand-helper:is-selecting?)
-    (buffer-substring (region-beginning)
-                      (region-end))
+  "Returns the current region/selection if exists.  If not,
+returns an empty string."
+  (if (region-active-p)
+      (buffer-substring (region-beginning)
+                        (region-end))
     ""))
 
 (defun wand-helper:eval-string (string)
-  "Eval a string non-interactively."
+  "Evals a string non-interactively."
   (eval (read string)))
+
+(defun wand-helper:uncomment-string (str comment-start comment-end)
+  "Uncomments a string.  The comment syntax is defined by
+`comment-start' and `comment-end'."
+  (let* ((saved-comment-start comment-start)
+         (saved-comment-end comment-end))
+    (with-temp-buffer
+      (let ((comment-start saved-comment-start)
+            (comment-end saved-comment-end))
+        (insert str)
+        (uncomment-region (point-min) (point-max)))
+      (buffer-string))))
+
+(defun* wand-helper:maybe-uncomment-string (str skip-comment?
+                                                &optional comment-start comment-end)
+  "Uncomments a string if `skip-comment?' is `t'.  The comment
+syntax is defined by `comment-start' and `comment-end'."
+  (if skip-comment?
+      (let* ((saved-comment-start comment-start)
+             (saved-comment-end comment-end))
+        (with-temp-buffer
+          (let ((comment-start saved-comment-start)
+                (comment-end saved-comment-end))
+            (insert str)
+            (uncomment-region (point-min) (point-max)))
+          (buffer-string)))
+    str))
 
 (provide 'wand-helper)
 ;;; wand-helper.el ends here

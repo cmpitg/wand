@@ -1,11 +1,11 @@
-;;; wand.el --- Magic wand for Emacs - Select and execute
+;;; wand.el --- Magic wand for Emacs - Select and execute  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2014-2018 Ha-Duong Nguyen (@cmpitg)
+;; Copyright (C) 2014-2019 Ha-Duong Nguyen (@cmpitg)
 
 ;; Author: Ha-Duong Nguyen <cmpitgATgmail>
 ;; Keywords: extensions, tools
 ;; URL: https://github.com/cmpitg/wand
-;; Package-Requires: ((dash "20161121.55") (s "20160928.636"))
+;; Package-Requires: ((dash "2.15.0") (s "0.1.1"))
 
 ;; This program is free software; you can redistribute it and/or modify it
 ;; under the terms of the GNU General Public License as published by the Free
@@ -22,15 +22,14 @@
 
 ;;; Commentary:
 
-;; Wand is an extension that allows users to select text and perform actions
-;; based on predefined patterns.  Wand is inspired by Xiki[1] and Acme
-;; editor[2].
+;; Wand is an extension that allows users perform actions on a region based on
+;; predefined patterns.  Wand is inspired by Xiki[1] and Acme[2].
 ;;
 
 ;;; Dependencies:
 
 ;; Note that you don't need to worry about these dependencies if you're using
-;; an Emacs package manager such as ELPA or el-get.
+;; an Emacs package manager.
 ;;
 ;; * Common Lisp Extensions, bundled with all recent versions of Emacs.
 ;;
@@ -57,101 +56,83 @@
 
 ;;; Usage:
 
-;; To add a rule:
+;; Wand works by going through a list of rules, stored in the `wand:*rules*'
+;; variable (which should be customized to be useful).  Each rule has the
+;; meaning of "if satisfied, perform an action; otherwise pass to the next
+;; rule" and is a cons of `(rule-check-fn . action-fn)':
 ;;
-;;   (wand:add-rule-by-pattern :match match-regexp
-;;                             :capture capture-rule
-;;                             :action action)
+;; * `rule-check-fn' is a one-argument function, taking a string and returns
+;;   `t' or `nil', determining if the string satisfies the current rule
 ;;
-;; Or set the value of `wand:*rules*' directly with `wand:create-rule'.  A
-;; piece of code example's worth thousands dry words:
+;; * `action-fn' is also a one-argument function, taking the same string and
+;;   performing action(s).
+;;
+;; After setting the rules, we simply call `wand:execute' with the
+;; corresponding string.
+;;
+;; Manually creating all the rules from ground up is possible but usually
+;; tedious.  Hence, Wand provides the `wand:create-rule' helper to facilitate
+;; the creation of a rule.  `wand:create-rule' takes several arguments
+;; describing the process of matching and extracting a string and the action
+;; performed upon.  Essentially, `wand:create-rule' cares about the following
+;; questions:
+;;
+;; * What is the regexp that the string is checked against to determine if the
+;;   rule is satisfied?  (The `match' argument)
+;;
+;; * If the string satisfies the rule, how is it then passed to the action
+;;   function?  (The `capture' argument, options are: `:after` - extracting
+;;   the string after the match, `:whole` - pass the whole string, `nil` -
+;;   pass `nil', or an extractor function taking the string and returning the
+;;   processed string)
+;;
+;; * What is the action that the extracted/processed string is performed upon?
+;;   (The `action' argument)
+;;
+;; * Is the current comment stripped before processing the string?  (The
+;;   `skip-comment' argument).  Comments are stripped by default.
+;;
+;; Here is an example of how it would look like in practice:
 ;;
 ;;   (setq wand:*rules*
 ;;         (list (wand:create-rule :match "\\$ "
 ;;                                 :capture :after
-;;                                 :action popup-shell-command)
+;;                                 :action #'popup-shell-command)
 ;;               (wand:create-rule :match "https?://"
 ;;                                 :capture :whole
-;;                                 :action open-url-in-firefox)
+;;                                 :action #'open-url-in-firefox)
 ;;               (wand:create-rule :match "file:"
 ;;                                 :capture :after
-;;                                 :action find-file)
+;;                                 :action #'find-file)
 ;;               (wand:create-rule :match "#> "
 ;;                                 :capture :after
-;;                                 :action (lambda (string)
-;;                                           (eval (read string))))))
+;;                                 :action #'(lambda (string)
+;;                                             (eval (read string))))))
 ;;
-;; Means: if you call `wand:execute'
+;; When calling `wand:execute <a-string>`, the following would happen:
 ;;
-;; * With `;; $ ls` in Lisp mode, a window[3] is popup with output of `ls` as
-;;   its content,
+;; * If the string is `;; $ ls`, call `(popup-shell-command "ls")`
 ;;
-;; * With `### $ ls` in Python mode, the result is similar as in Lisp mode,
+;; * If the string is `http://google.com` or `https://google.com`, call
+;;   `(open-url-in-firefox <the-url>)`.
 ;;
-;; * With `http://google.com` or `https://google.com`, your Firefox will open
-;;   Google home page (with HTTP and HTTPS respectively),
+;; * If the string is `file:~/tmp/tmp.el`, call `(find-file "~/tmp/tmp/.el")`.
 ;;
-;; * With `file:~/tmp/tmp.el`, your `$HOME/tmp/tmp.el` is open in Emacs,
-;;
-;; * With `#> (message-box "¡Hola a todos!")`, a message box is displayed with
-;;   the text "¡Hola a todos!".
+;; * If the string is `#> (message-box "¡Hola a todos!")`, eval `(message-box
+;;   "¡Hola a todos!")`.
 ;;
 ;; * With any other string, the string is `eval'-ed with `wand:eval-string'.
 ;;   This the default action for all unmatched strings.
 ;;
-;; Of course `popup-shell-command' and `open-url-in-firefox' have to be
-;; defined.
-;;
 ;; It's recommended to bind `wand:execute' to a key stroke and/or mouse for
-;; better usage pattern.  Here is a full example, take from my configuration:
+;; better usage.
 ;;
-;;   (require 'wand)
-;;   (global-set-key (kbd "<C-return>")       'wand:execute)
-;;   (global-set-key (kbd "<C-S-return>")     'wand:execute-current-line)
-;;   (global-set-key (kbd "<C-mouse-1>")      'wand:execute)
-;;   (global-set-key (kbd "<C-down-mouse-1>")  nil)
-;;
-;;   (dolist (rule (list (wand:create-rule :match "\\$ "
-;;                                         :capture :after
-;;                                         :action $popup-shell-command)
-;;                       (wand:create-rule :match "https?://"
-;;                                         :capture :whole
-;;                                         :action $open-url-in-firefox)
-;;                       (wand:create-rule :match "file:"
-;;                                         :capture :after
-;;                                         :action toolbox:open-file)
-;;                       (wand:create-rule :match "#> "
-;;                                         :capture :after
-;;                                         :action $add-bracket-and-eval)
-;;                       (wand:create-rule :match "window:"
-;;                                         :capture :after
-;;                                         :action $switch-to-window)
-;;                       (wand:create-rule :match "eshell-cd:"
-;;                                         :capture :after
-;;                                         :action $change-dir-in-eshell)
-;;                       ))
-;;     (wand:add-rule rule))
-;;
-;; Note that `wand:execute' is an interactive command.  Thus you can call it
-;; just like other commands.
-;;
-;; Rule match order: last rule is checked first.  It means if you have 2 rules
-;; that share the same match regexp, the latter is chosen.
-;;
-
-;;; How it works:
-
-;; `wand:*rules*' is an alist of rules with format `(check-fn . action-fn)`.
-;; The input string passed to `wand:execute' is passed to all the `check-fn`s
-;; in the order they are added.  If `check-fn` returns `t', `action-fn` is
-;; called with the same input string as its only argument.  For detailed
-;; documentation, see docstrings of `wand:*rules*' and `wand:execute'.
 
 ;;; Notes and references:
 
 ;; [1] http://xiki.org/
 ;; [2] http://acme.cat-v.org/
-;; [3] This is a window in Emacs terms, not a window in your GUI system.
+;; [3] A window as in Emacs term
 ;; [4] https://github.com/magnars/dash.el
 ;; [5] https://github.com/magnars/s.el
 
@@ -166,47 +147,33 @@
 
 (defvar wand:*rules*
   '()
-  "The list of rules to for pattern-based action.  Rules are
-added using `wand:add-rule'/`wand:add-rule-by-pattern' and remove
-using `wand:remove-rule'/`wand:remove-rule-by-pattern'.  Each
-element is a pair: `\(check-fn . action-fn\)` where:
+  "The list of rules to for pattern-based action.
+Each rule is a cons of the format `\(check-fn . action-fn\)`:
 
 * `check-fn` is a one-argument function, taking a string and
   determining if the string satisfies the rule.
 
 * `action-fn` is a one-argument function, taking a string and
   execute the action based on that string if its corresponding
-  `check-fn` is satisfied.")
+  `check-fn` returns `t'.")
 
 (defun wand:get-rule-action (string)
-  "Determine if a string matches a predefined rule.  If it does,
-return the function corresponding to that rule's action;
-otherwise return `nil'."
+  "Determines if a string matches a predefined rule.  If it does,
+returns the function corresponding to that rule's action;
+otherwise returns `nil'."
   (thread-last wand:*rules*
     (-first (lambda (rule-pair)
               (let ((rule-check-fn (car rule-pair)))
                 (funcall rule-check-fn string))))
     cdr))
 
-(defun wand:get-from-match-to-end (string regexp)
-  "Extract the substring from the end of the current match \(by
-`regexp`\) til the end of the string.
-
-E.g.
-
-\(wand:get-from-match-to-end \";; $ ls -lahF\" \"^[; ]*\\\\$ \"\)
-;; => \"ln -lahF\"
-"
-  (string-match regexp string)
-  (substring string (or (match-end 0) 0)))
-
 (defun wand:eval-string (&optional string)
-  "Add outer-most surrounding bracket if necessary and eval the
-string.  This function may be called interactively.  If it's in
-string is `'nil', the current selection is evaluated.
+  "Adds a pair of surrounding brackets if necessary and evals the
+string.  If no string is passed, take the current region as the
+string.
 
 This function is convenient when being called interactively or
-quickly eval a selection which contains Emacs Lisp code.
+quickly eval a region.
 
 E.g.
 
@@ -225,23 +192,23 @@ E.g.
                              (s-ends-with?   ")" preprocessed-sexp)))
                    (format "(%s)" preprocessed-sexp)
                  preprocessed-sexp)))
-    (unless (wand-helper:string-empty? (s-trim string))
+    (unless (string-empty-p (s-trim string))
       (wand-helper:eval-string sexp))))
 
-(defmacro* wand:create-rule (&key (skip-comment t)
-                                  match
-                                  capture
-                                  (action wand:eval-string))
-  "This macro provides a simplified, declarative, yet very
-effective way to create a pattern-action rule without having to
-construct the `\(check-fn . action-fn\)` cons manually.
+(defun* wand:create-rule (&key (skip-comment t)
+                               match
+                               capture
+                               (action wand:eval-string))
+  "This function provides a simplified and declarative way to
+create a pattern-action rule without having to construct the
+`\(check-fn . action-fn\)` conses manually.
 
 `wand:create-rule' takes several arguments describing the process
 of matching and extracting a string and the action performed upon
 it:
 
 * `match` is a regexp to test whether the input string (passed to
-  `check-fn`) satisfies current rule.  The input string is
+  `check-fn`) satisfies the current rule.  The input string is
   checked with `string-match-p'.
 
 * `capture` determines how the input string is extracted to be
@@ -262,10 +229,10 @@ it:
   - a function - that takes the original string and returns what
     `action` wants to process
 
-* `skip-comment` takes either `t' or `nil', determining if line
-  comment syntax of current mode is skipped when matching
-  happens.  By default, `skip-comment` is `t', which means
-  comments are skipped.
+* `skip-comment` takes either `t' or `nil', determining the
+  string is stripped of comments.  The comment syntax is defined
+  by Emacs's standard `comment-start' and `comment-end'
+  variables.
 
 * `action` is `action-fn`, a function that will be called when
   the input string is matched.  `action` is `wand:eval-string' by
@@ -292,77 +259,39 @@ Open file when input string is `file:///path/to/your-file`:
             :capture :after
             :action find-file\)
 "
-  (let* ((match-regexp (if skip-comment
-                           `(format "^[%s ]*%s"
-                                    comment-start
-                                    ,match)
-                         match))
+  (cl-labels ((rule-check-fn
+               (str)
+               (thread-last (wand-helper:maybe-uncomment-string str skip-comment
+                                                                comment-start comment-end)
+                 (string-match-p match)))
+              (action-fn
+               (str)
+               (let* ((str (wand-helper:maybe-uncomment-string str skip-comment
+                                                               comment-start comment-end))
+                      (processed-str
+                       (cond
+                        ((eq :after capture)
+                         (let ((prefix (progn (string-match match str)
+                                              (match-string 0 str))))
+                           (s-chop-prefix prefix str)))
 
-         (extract-regexp (cond
-                          ;; Capture the string after position the regexp
-                          ;; matches
-                          ((equalp :after capture)
-                           (if skip-comment
-                               `(format "^[%s ]*%s\\(.*\\)$"
-                                        comment-start
-                                        ,match)
-                             `(format "%s\\(.*\\)$" ,match)))
+                        ((eq :whole capture)
+                         str)
 
-                          ;; Capture the whole string right after comment
-                          ((equalp :whole capture)
-                           (if skip-comment
-                               `(format "^[%s ]*\\(.*\\)$"
-                                        comment-start)
-                             `(rx (group (0+ (or any "\n"))))))
+                        ((null capture)
+                         nil)
 
-                          ;; No capturing
-                          ((or (null capture)
-                               (not (equalp 'string (type-of capture))))
-                           "")
+                        ((functionp capture)
+                         (funcall capture str))
 
-                          ;; Regexp is specified manually
-                          (t
-                           capture)))
-
-         (rule-check-fn `(lambda (string)
-                           ,match       ; Using `match` as its docstring
-                           (string-match-p ,match-regexp string)))
-
-         (action-fn `(lambda (string)
-                       (let* ((extract (progn
-                                         (string-match ,extract-regexp string)
-                                         (match-string 1 string))))
-                         (,action extract)))))
-    `(cons ,rule-check-fn ,action-fn)))
-
-(defun wand:add-rule (rule)
-  "Add a rule created by `wand:create-rule' to `wand:*rules*'.
-
-Usage: `\(wand:add-rule \(wand:create-rule ...\)\)`.
-
-Note: If 2 rules share the same pattern, the one which is added
-latter takes higher precedence."
-  (wand:remove-rule (car rule))
-  (setq wand:*rules* (cons rule wand:*rules*)))
-
-(defun wand:remove-rule (check-fn)
-  "Remove a rule from `wand:*rules*' based on its `check-fn` and
-return `wand:*rules*'."
-  (setq wand:*rules* (-filter (lambda (rule)
-                                (let ((fn (car rule)))
-                                  (not (equal fn check-fn))))
-                              wand:*rules*)))
-
-(defun wand:remove-rule-by-pattern (pattern)
-  "Remove a rule from `wand:*rules*' based on its matching
-pattern and return `wand:*rules*'."
-  (setq wand:*rules* (-filter (lambda (rule)
-                                (let ((fn (car rule)))
-                                  (not (equal pattern (documentation fn)))))
-                              wand:*rules*)))
+                        (t
+                         (error "`capture` must be :after, :whole, nil, or a function")))))
+                 (funcall action processed-str))))
+    (cons (function rule-check-fn)
+          (function action-fn))))
 
 (defun* wand:execute (&optional (string-to-execute ""))
-  "Execute a string based on predefined rules stored in
+  "Executes a string based on predefined rules stored in
 `wand:*rules*.  If no rules are found, eval the string using
 `wand:eval-string' function.
 
@@ -398,34 +327,8 @@ E.g.
                    string-to-execute))
          (action (or (wand:get-rule-action string)
                      #'wand:eval-string)))
-    (unless (wand-helper:string-empty? (s-trim string))
+    (unless (string-empty-p (s-trim string))
       (funcall action string))))
-
-(defun wand:execute-current-line ()
-  "Call `wand:execute' on current line."
-  (interactive)
-  (wand:execute (thing-at-point 'line)))
-
-(defmacro* wand:add-rule-by-pattern (&key (skip-comment t)
-                                          match
-                                          capture
-                                          (action wand:eval-string))
-  "This function is a shorthand for
-
-\(add-to-list 'wand:*rules*
-             \(wand:create-rule :skip-comment skip-comment
-                               :match match
-                               :capture capture
-                               :action action\)\)
-
-Besides, if there are 2 rules that share the same `match', the
-one which's added later takes effect."
-  `(setq wand:*rules* (wand:remove-rule-by-pattern ,match))
-  `(wand:add-rule (wand:create-rule :skip-comment ,skip-comment
-                                    :match ,match
-                                    :capture ,capture
-                                    :action ,action)))
-
 
 (provide 'wand)
 ;;; wand.el ends here
