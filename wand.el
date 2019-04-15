@@ -261,12 +261,16 @@ Open file when input string is `file:///path/to/your-file`:
 "
   (cl-labels ((rule-check-fn
                (str)
-               (thread-last (wand-helper:maybe-uncomment-string str skip-comment
-                                                                comment-start comment-end)
-                 (string-match-p match)))
+               (let ((comment-start (if (null comment-start) ";" comment-start))
+                     (comment-end (if (null comment-end) "" comment-end)))
+                 (thread-last (wand-helper:maybe-uncomment-string str skip-comment
+                                                                  comment-start comment-end)
+                   (string-match-p match))))
               (action-fn
                (str)
-               (let* ((str (wand-helper:maybe-uncomment-string str skip-comment
+               (let* ((comment-start (if (null comment-start) ";" comment-start))
+                      (comment-end (if (null comment-end) "" comment-end))
+                      (str (wand-helper:maybe-uncomment-string str skip-comment
                                                                comment-start comment-end))
                       (processed-str
                        (cond
