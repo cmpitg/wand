@@ -188,7 +188,8 @@ E.g.
                                     (string-empty-p string))
                                 (wand-helper:get-selection)
                               string))
-         (sexp (if (intern-soft preprocessed-sexp)
+         (sexp (if (and (intern-soft preprocessed-sexp)
+                        (boundp (intern-soft preprocessed-sexp)))
                    preprocessed-sexp
                  (format "(%s)" preprocessed-sexp))))
     (unless (string-empty-p (s-trim string))
