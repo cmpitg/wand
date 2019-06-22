@@ -35,31 +35,17 @@ returns an empty string."
   "Evals a string non-interactively."
   (eval (read string)))
 
-(defun wand-helper:uncomment-string (str comment-start comment-end)
-  "Uncomments a string.  The comment syntax is defined by
-`comment-start' and `comment-end'."
-  (let* ((saved-comment-start comment-start)
-         (saved-comment-end comment-end))
-    (with-temp-buffer
-      (let ((comment-start saved-comment-start)
-            (comment-end saved-comment-end))
-        (insert str)
-        (uncomment-region (point-min) (point-max)))
-      (buffer-string))))
-
 (defun* wand-helper:maybe-uncomment-string (str skip-comment?
-                                                &optional comment-start comment-end)
+                                                &key
+                                                major-mode-fn)
   "Uncomments a string if `skip-comment?' is `t'.  The comment
-syntax is defined by `comment-start' and `comment-end'."
+syntax is defined by the major mode, denoted by `major-mode-fn'."
   (if skip-comment?
-      (let* ((saved-comment-start comment-start)
-             (saved-comment-end comment-end))
-        (with-temp-buffer
-          (let ((comment-start saved-comment-start)
-                (comment-end saved-comment-end))
-            (insert str)
-            (uncomment-region (point-min) (point-max)))
-          (buffer-string)))
+      (with-temp-buffer
+        (funcall major-mode-fn)
+        (insert str)
+        (uncomment-region (point-min) (point-max))
+        (buffer-string))
     str))
 
 (provide 'wand-helper)
