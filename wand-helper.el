@@ -48,7 +48,7 @@ syntax is defined by the major mode, denoted by `major-mode-fn'."
          (insert str)
 
          ;; NOTE: This check exists as a hack, due to org-mode's breaking `UNCOMMENT-REGION'
-         (unless (= major-mode 'org-mode)
+         (unless (equal major-mode 'org-mode)
            (uncomment-region (point-min) (point-max)))
 
          (buffer-string)))
