@@ -46,7 +46,11 @@ syntax is defined by the major mode, denoted by `major-mode-fn'."
        (with-temp-buffer
          (funcall major-mode-fn)
          (insert str)
-         (uncomment-region (point-min) (point-max))
+
+         ;; NOTE: This check exists as a hack, due to org-mode's breaking `UNCOMMENT-REGION'
+         (unless (= major-mode 'org-mode)
+           (uncomment-region (point-min) (point-max)))
+
          (buffer-string)))
     str))
 
