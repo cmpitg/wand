@@ -41,18 +41,19 @@ returns an empty string."
   "Uncomments a string if `skip-comment?' is `t'.  The comment
 syntax is defined by the major mode, denoted by `major-mode-fn'."
   (if skip-comment?
+    (with-temp-buffer
+      (insert str)
+      (funcall major-mode-fn)
+
       (let ((comment-start (if (null comment-start) ";" comment-start))
             (comment-end (if (null comment-end) "" comment-end)))
-        (with-temp-buffer
-          (insert str)
-          (funcall major-mode-fn)
 
-          ;; NOTE: This check exists as a hack, due to org-mode's breaking `UNCOMMENT-REGION'
-          (ignore-errors
-            (unless (equal major-mode 'org-mode)
-              (uncomment-region (point-min) (point-max))))
+        ;; NOTE: This check exists as a hack, due to org-mode's breaking `UNCOMMENT-REGION'
+        (ignore-errors
+          (unless (equal major-mode 'org-mode)
+            (uncomment-region (point-min) (point-max))))
 
-          (buffer-string)))
+        (buffer-string)))
     str))
 
 (provide 'wand-helper)
