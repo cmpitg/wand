@@ -1,6 +1,6 @@
 ;;; wand-helper.el --- Helpers for Wand
 
-;; Copyright (C) 2014-2020 Ha-Duong Nguyen (@cmpitg)
+;; Copyright (C) 2014-2021 Ha-Duong Nguyen (@cmpitg)
 
 ;; Author: Ha-Duong Nguyen <cmpitgATgmail>
 ;; Keywords: extensions, tools
@@ -23,6 +23,8 @@
 
 ;;; Code:
 
+(require 'cl-lib)
+
 (defun wand-helper:get-selection ()
   "Returns the current region/selection if exists.  If not,
 returns an empty string."
@@ -35,25 +37,25 @@ returns an empty string."
   "Evals a string non-interactively."
   (eval (read string)))
 
-(defun* wand-helper:maybe-uncomment-string (str skip-comment?
-                                                &key
-                                                major-mode-fn)
+(cl-defun wand-helper:maybe-uncomment-string (str skip-comment?
+                                                  &key
+                                                  major-mode-fn)
   "Uncomments a string if `skip-comment?' is `t'.  The comment
 syntax is defined by the major mode, denoted by `major-mode-fn'."
   (if skip-comment?
-    (with-temp-buffer
-      (insert str)
-      (funcall major-mode-fn)
+      (with-temp-buffer
+        (insert str)
+        (funcall major-mode-fn)
 
-      (let ((comment-start (if (null comment-start) ";" comment-start))
-            (comment-end (if (null comment-end) "" comment-end)))
+        (let ((comment-start (if (null comment-start) ";" comment-start))
+              (comment-end (if (null comment-end) "" comment-end)))
 
-        ;; NOTE: This check exists as a hack, due to org-mode's breaking `UNCOMMENT-REGION'
-        (ignore-errors
-          (unless (equal major-mode 'org-mode)
-            (uncomment-region (point-min) (point-max))))
+          ;; NOTE: This check exists as a hack, due to org-mode's breaking `UNCOMMENT-REGION'
+          (ignore-errors
+            (unless (equal major-mode 'org-mode)
+              (uncomment-region (point-min) (point-max))))
 
-        (buffer-string)))
+          (buffer-string)))
     str))
 
 (provide 'wand-helper)
