@@ -1,6 +1,6 @@
 ;;; wand-helper.el --- Helpers for Wand
 
-;; Copyright (C) 2014-2018 Ha-Duong Nguyen (@cmpitg)
+;; Copyright (C) 2014-2022 Ha-Duong Nguyen (@cmpitg)
 
 ;; Author: Ha-Duong Nguyen <cmpitgATgmail>
 ;; Keywords: extensions, tools
@@ -22,6 +22,13 @@
 
 
 ;;; Code:
+
+(defun wand-helper:find (pred xs)
+  "Finds and returns the first element from the list XS that satisfies PRED.
+If no element is found, returns nil."
+    (cl-loop for x in xs
+             when (funcall pred x)
+             return x))
 
 (defun wand-helper:get-selection ()
   "Returns the current region/selection if exists.  If not,

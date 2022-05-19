@@ -1,11 +1,11 @@
 ;;; wand.el --- Magic wand for Emacs - Select and execute  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2014-2019 Ha-Duong Nguyen (@cmpitg)
+;; Copyright (C) 2014-2022 Ha-Duong Nguyen (@cmpitg)
 
 ;; Author: Ha-Duong Nguyen <cmpitgATgmail>
 ;; Keywords: extensions, tools
 ;; URL: https://github.com/cmpitg/wand
-;; Package-Requires: ((dash "2.15.0") (s "0.1.1"))
+;; Package-Requires: ()
 
 ;; This program is free software; you can redistribute it and/or modify it
 ;; under the terms of the GNU General Public License as published by the Free
@@ -25,19 +25,6 @@
 ;; Wand is an extension that allows users perform actions on a region based on
 ;; predefined patterns.  Wand is inspired by Xiki[1] and Acme[2].
 ;;
-
-;;; Dependencies:
-
-;; Note that you don't need to worry about these dependencies if you're using
-;; an Emacs package manager.
-;;
-;; * Common Lisp Extensions, bundled with all recent versions of Emacs.
-;;
-;; * A modern list library for Emacs Lisp: @magnars's excellent Dash[4] -- to
-;;   promote better ways to write Emacs Lisp.
-;;
-;; * The long lost Emacs string manipulation library: s.el[5] -- also by
-;;   @magnars.
 
 ;;; Installation:
 
@@ -139,8 +126,6 @@
 ;;; Code:
 
 (require 'cl)
-(require 'dash)
-(require 's)
 (require 'subr-x)
 
 (require 'wand-helper)
@@ -161,10 +146,11 @@ Each rule is a cons of the format `\(check-fn . action-fn\)`:
   "Determines if a string matches a predefined rule.  If it does,
 returns the function corresponding to that rule's action;
 otherwise returns `nil'."
-  (thread-last wand:*rules*
-    (-first (lambda (rule-pair)
-              (let ((rule-check-fn (car rule-pair)))
-                (funcall rule-check-fn string))))
+  (thread-last
+    wand:*rules*
+    (wand-helper:find (lambda (rule-pair)
+                        (let ((rule-check-fn (car rule-pair)))
+                          (funcall rule-check-fn string))))
     cdr))
 
 (defun wand:eval-string (&optional string)
@@ -191,11 +177,11 @@ E.g.
          (sexp (cond ((and (intern-soft preprocessed-sexp)
                            (boundp (intern-soft preprocessed-sexp)))
                       preprocessed-sexp)
-                     ((s-starts-with? "(" (string-trim-left preprocessed-sexp))
+                     ((string-prefix-p "(" (string-trim-left preprocessed-sexp))
                       preprocessed-sexp)
                      (t
                       (format "(%s)" preprocessed-sexp)))))
-    (unless (string-empty-p (s-trim string))
+    (unless (string-empty-p (string-trim string))
       (wand-helper:eval-string sexp))))
 
 (defun* wand:create-rule (&key (skip-comment t)
@@ -329,7 +315,7 @@ E.g.
                    string-to-execute))
          (action (or (wand:get-rule-action string)
                      #'wand:eval-string)))
-    (unless (string-empty-p (s-trim string))
+    (unless (string-empty-p (string-trim string))
       (funcall action string))))
 
 (provide 'wand)
