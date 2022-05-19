@@ -23,12 +23,14 @@
 
 ;;; Code:
 
+(require 'cl-lib)
+
 (defun wand-helper:find (pred xs)
   "Finds and returns the first element from the list XS that satisfies PRED.
 If no element is found, returns nil."
-    (cl-loop for x in xs
-             when (funcall pred x)
-             return x))
+  (cl-loop for x in xs
+           when (funcall pred x)
+           return x))
 
 (defun wand-helper:get-selection ()
   "Returns the current region/selection if exists.  If not,
@@ -42,23 +44,25 @@ returns an empty string."
   "Evals a string non-interactively."
   (eval (read string)))
 
-(defun* wand-helper:maybe-uncomment-string (str skip-comment?
-                                                &key
-                                                major-mode-fn)
+(cl-defun wand-helper:maybe-uncomment-string (str skip-comment?
+                                                  &key
+                                                  major-mode-fn)
   "Uncomments a string if `skip-comment?' is `t'.  The comment
 syntax is defined by the major mode, denoted by `major-mode-fn'."
   (if skip-comment?
-      (let ((comment-start (if (null comment-start) ";" comment-start))
-            (comment-end (if (null comment-end) "" comment-end)))
-       (with-temp-buffer
-         (funcall major-mode-fn)
-         (insert str)
+      (with-temp-buffer
+        (insert str)
+        (funcall major-mode-fn)
 
-         ;; NOTE: This check exists as a hack, due to org-mode's breaking `UNCOMMENT-REGION'
-         (unless (equal major-mode 'org-mode)
-           (uncomment-region (point-min) (point-max)))
+        (let ((comment-start (if (null comment-start) ";" comment-start))
+              (comment-end (if (null comment-end) "" comment-end)))
 
-         (buffer-string)))
+          ;; NOTE: This check exists as a hack, due to org-mode's breaking `UNCOMMENT-REGION'
+          (ignore-errors
+            (unless (equal major-mode 'org-mode)
+              (uncomment-region (point-min) (point-max))))
+
+          (buffer-string)))
     str))
 
 (provide 'wand-helper)
